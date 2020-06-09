@@ -9,12 +9,20 @@
             android:icon="@mipmap/ic_menu_home"
             android:title="@string/menu_home" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/nav_description"
+            android:icon="@mipmap/ic_menu_info"
+            android:title="@string/menu_description" />
+        <item
+            android:id="@+id/nav_report"
             android:icon="@mipmap/ic_menu_report"
             android:title="@string/menu_report" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_setting"
             android:icon="@mipmap/ic_menu_setting"
             android:title="@string/menu_setting" />
+        <item
+            android:id="@+id/nav_team"
+            android:icon="@mipmap/ic_menu_team"
+            android:title="@string/menu_team" />
     </group>
 </menu>

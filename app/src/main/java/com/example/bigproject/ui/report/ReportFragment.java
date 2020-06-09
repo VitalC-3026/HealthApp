@@ -1,8 +1,7 @@
-package com.example.bigproject.ui.gallery;
+package com.example.bigproject.ui.report;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.bigproject.R;
@@ -24,13 +21,11 @@ import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
-public class GalleryFragment extends Fragment {
+public class ReportFragment extends Fragment {
 
-    private GalleryViewModel galleryViewModel;
+    private ReportViewModel reportViewModel;
 
     //测试数据,待补充，需要从内存文件中读取使用时间
     private int sleep=60,
@@ -53,9 +48,9 @@ public class GalleryFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        galleryViewModel =
-                ViewModelProviders.of(this).get(GalleryViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_gallery, container, false);
+        reportViewModel =
+                ViewModelProviders.of(this).get(ReportViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_report, container, false);
 //        final TextView textView = root.findViewById(R.id.text_gallery);
 //        galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
 //            @Override

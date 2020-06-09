@@ -30,14 +30,42 @@
     </fragment>-->
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.example.bigproject.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_report"
+        android:name="com.example.bigproject.ui.report.ReportFragment"
+        android:label="@string/menu_report"
+        tools:layout="@layout/fragment_report">
+        <action
+            android:id="@+id/action_nav_report_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.example.bigproject.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_setting"
+        android:name="com.example.bigproject.ui.setting.SettingFragment"
+        android:label="@string/menu_setting"
+        tools:layout="@layout/fragment_setting">
+        <action
+            android:id="@+id/action_nav_setting_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_team"
+        android:name="com.example.bigproject.ui.team.TeamFragment"
+        android:label="@string/menu_team"
+        tools:layout="@layout/fragment_team">
+        <action
+            android:id="@+id/action_nav_team_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_description"
+        android:name="com.example.bigproject.ui.description.DescriptionFragment"
+        android:label="@string/menu_description"
+        tools:layout="@layout/fragment_description">
+        <action
+            android:id="@+id/action_nav_description_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
 </navigation>
