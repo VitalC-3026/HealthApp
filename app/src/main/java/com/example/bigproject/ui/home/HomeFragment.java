@@ -57,13 +57,13 @@ public class HomeFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setIcon(R.mipmap.ic_logo);
         builder.setTitle("温馨提示");
-        builder.setMessage("为了手机的正常运行，请允许应用获取以下权限！");
+        builder.setMessage("为了手机的正常运行，请允许应用获取传感器参数权限！");
         builder.setPositiveButton("我知道了",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         HomeFragment.this.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE,}, 100);
+                                Manifest.permission.BODY_SENSORS,}, 100);
                     }
                 });
         AlertDialog dialog = builder.create();
