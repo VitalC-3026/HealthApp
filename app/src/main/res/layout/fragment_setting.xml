@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.setting.SettingFragment">
+    tools:context=".ui.setting.SettingFragment"
+    android:id="@+id/setting_fragment">
 
     <TextView
         android:id="@+id/text_slideshow"
@@ -20,4 +21,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:gravity="center_horizontal" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        tools:ignore="MissingConstraints"
+        android:id="@+id/storage"
+        android:text="读取手机内存" />
 </androidx.constraintlayout.widget.ConstraintLayout>
