@@ -2,9 +2,15 @@ package com.example.bigproject;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -20,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
@@ -39,7 +46,12 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
     private HomeFragment homeFragment = new HomeFragment();
     // 获取权限的请求码，到请求权限都要对应输入这个请求码
     private static final int BAIDU_READ_PHONE_STATE = 100;
+    private PowerManager powerManager;
+    private KeyguardManager keyguardManager;
+    private ScreenBroadcastReceiver screenReceiver;
+    private IntentFilter intentFilter;
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +79,17 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
             showContacts();
         }
 
+        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        boolean isPowerOn = isPowerOn();
+        boolean isUsing = isPhoneLocked();
+
+        // 广播方式
+        intentFilter = startScreenBroadcastReciver(this);
+        screenReceiver = new ScreenBroadcastReceiver();
+        registerReceiver(screenReceiver, intentFilter);
+        // 获取屏幕状态 1=>屏幕亮 2=>屏幕熄灭 3=>屏幕正在使用
+        int res = screenReceiver.getResult();
     }
 
     @Override
@@ -86,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
     @Override
     public void onDestroy() {
         lightSensor.unregisterLightSensor();
+        unregisterReceiver(screenReceiver);
         super.onDestroy();
     }
 
@@ -161,4 +185,49 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
                 break;
         }
     }
+
+    // 判断是否熄屏 要求安卓在4.4W及以上
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
+    public boolean isPowerOn() {
+        return powerManager.isInteractive();
+    }
+
+    // 判断是否解锁 要求安卓在5.1及以上
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+    // true=>手机处于锁屏状态， false=>手机处于解锁状态
+    public boolean isPhoneLocked() {
+        return keyguardManager.isDeviceLocked() || keyguardManager.isKeyguardLocked();
+    }
+
+    private class ScreenBroadcastReceiver extends BroadcastReceiver {
+        private String action = null;
+        private int result = 0;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            action = intent.getAction();
+            if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                result = 1;
+            } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                result = 2;
+            } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
+                result = 3;
+            }
+        }
+
+        public int getResult() {
+            return result;
+        }
+    }
+
+    // 广播方式
+    private IntentFilter startScreenBroadcastReciver(Context context) {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        context.registerReceiver(screenReceiver, filter);
+        return filter;
+    }
+
 }
