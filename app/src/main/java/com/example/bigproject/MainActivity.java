@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
@@ -17,7 +19,12 @@ import android.view.Menu;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toast;
 
+import com.example.bigproject.LocationService.LocationService;
+import com.example.bigproject.light.LightSensor;
+
+import com.example.bigproject.orientation.OrientSensor;
 import com.example.bigproject.LocationService.LocationUtils;
 import com.example.bigproject.light.LightSensor;
 import com.example.bigproject.ui.home.HomeFragment;
@@ -29,6 +36,7 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
+import androidx.annotation.RequiresApi;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -37,7 +45,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-public class MainActivity extends AppCompatActivity implements LightSensor.LightCallback {
+import java.io.File;
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity
+        implements OrientSensor.OrientCallBack, LocationService.LocationCallBack, LightSensor.LightCallback {
 
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
@@ -51,7 +63,10 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
     private ScreenBroadcastReceiver screenReceiver;
     private IntentFilter intentFilter;
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+
+    private Context mContext;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +105,68 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
         registerReceiver(screenReceiver, intentFilter);
         // 获取屏幕状态 1=>屏幕亮 2=>屏幕熄灭 3=>屏幕正在使用
         int res = screenReceiver.getResult();
+
+        float num[] = new float[4];//用来存储从文件中读取出的数据
+        String detail = "";
+        FileHelper fHelper2 = new FileHelper(getApplicationContext());
+        try    {
+        String fname = "myFile.txt";
+        detail = fHelper2.read(fname);
+        String stringArray[] = detail.split(" ");
+        for (int i = 0; i < stringArray.length; i++) {
+            num[i] = Float.parseFloat(stringArray[i]);
+        }
+//            Toast.makeText(getContext(), values[0]+" "+values[1]+" "+values[2]+" "+sum+" ", Toast.LENGTH_SHORT).show();
+        } catch(IOException e){
+        e.printStackTrace();
     }
+    saveToFile(sleepTime/60+num[0], moveTime/60+num[1], darkTime/60+num[2], sumTime);//将更新的参数保存到文件中
+
+    OrientSensor orientSensor = new OrientSensor(this, this);
+        orientSensor.registerOrient();
+    LocationService locationService = new LocationService(this, this, this);
+        locationService.start();
+//        LightSensor lightSensor=new LightSensor(this,this);
+}
+
+    private float sleepTime;
+    private float moveTime;
+    private float darkTime=10;
+    private float sumTime=300;
+
+
+
+
+    @Override
+    public void getLocationTime(float time) {
+        this.moveTime=time;
+    }
+
+    @Override
+    public void getDarktime(float Darktime) {
+//        this.darkTime=Darktime;//对应的传感器未传值
+    }
+
+    @Override
+    public void getOrientTime(float time) {
+        this.sleepTime=time;
+    }
+
+    public void saveToFile(float sleepTime,float moveTime,float darkTime,float sumTime)
+    {
+        FileHelper fileHelper=new FileHelper(mContext);
+        String fileName="myFile.txt";
+        String filedetail=sleepTime+" "+moveTime+" "+darkTime+" "+sumTime;
+
+        try {
+            fileHelper.save(fileName,filedetail);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -241,3 +317,4 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
     }
 
 }
+

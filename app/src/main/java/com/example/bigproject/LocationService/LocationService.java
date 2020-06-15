@@ -12,6 +12,8 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
@@ -85,6 +87,7 @@ public class LocationService {
                 activity.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
             }
             lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
             provider = locationManager.getBestProvider(criteria, true);
             if (checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(context,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling

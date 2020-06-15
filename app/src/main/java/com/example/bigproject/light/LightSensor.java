@@ -13,6 +13,9 @@ public class LightSensor implements SensorEventListener {
     public Sensor lightSensor;
     public float[] lux;
 
+    private float totalTime=0;
+    private long lastTime;
+
     public LightSensor(Context context, LightCallback callback) {
         this.callback = callback;
         this.context = context;
@@ -31,8 +34,11 @@ public class LightSensor implements SensorEventListener {
             lux[0] = values[0];
             // 计算屏幕的亮度
             lux[1] = values[0] * (1f / 255f);
+
         }
         callback.getLight(lux);
+
+
     }
 
     @Override
@@ -42,6 +48,7 @@ public class LightSensor implements SensorEventListener {
 
     public interface LightCallback {
         void getLight(float[] values);
+        void getDarktime(float Darktime);
     }
 
     /**

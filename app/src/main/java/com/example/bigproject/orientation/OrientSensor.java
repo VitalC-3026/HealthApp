@@ -6,6 +6,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
+import android.util.Log;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class OrientSensor implements SensorEventListener {
     private float totalTime=0;
@@ -15,6 +20,20 @@ public class OrientSensor implements SensorEventListener {
     private Configuration configuration;
     private OrientCallBack orientCallBack;
     private Context context;
+
+    //躺卧 计时
+//    public int seconds=0;
+//    long startTime=0;
+//    Handler timerHandler=new Handler();
+//    Runnable timerRunnable=new Runnable() {
+//        @Override
+//        public void run() {
+//            long millis = System.currentTimeMillis() - startTime;
+//            seconds = (int) (millis / 1000);
+//            timerHandler.postDelayed(this, 500);
+//        }
+//    };
+
 
     public OrientSensor(Context context,OrientCallBack orientCallBack){
         this.context=context;
@@ -75,6 +94,12 @@ public class OrientSensor implements SensorEventListener {
             totalTime+=0.1;
             orientCallBack.getOrientTime(totalTime);
         }
+//        else{
+//            startTime=System.currentTimeMillis();
+//            timerHandler.postDelayed(timerRunnable,0);
+//        }
+//        Log.d("myTag", "onSensorChanged: 躺卧"+totalTime);
+        orientCallBack.getOrientTime(totalTime);
     }
 
     @Override

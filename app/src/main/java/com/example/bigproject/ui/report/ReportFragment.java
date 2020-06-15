@@ -1,5 +1,6 @@
 package com.example.bigproject.ui.report;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,11 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.bigproject.FileHelper;
+import com.example.bigproject.MainActivity;
 import com.example.bigproject.R;
 
 import org.achartengine.ChartFactory;
@@ -20,6 +24,7 @@ import org.achartengine.model.CategorySeries;
 import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Calendar;
 
@@ -28,12 +33,16 @@ public class ReportFragment extends Fragment {
     private ReportViewModel reportViewModel;
 
     //测试数据,待补充，需要从内存文件中读取使用时间
-    private int sleep=60,
-        move=30,
-        dark=60,
-        sum=300;
-    private int health=move+sleep+dark;
-    private double[] values={sleep,move,dark};
+    private float sleep,
+        move,
+        dark,
+        sum;
+
+//    private Context mcontext;
+
+
+    private float health;
+    private float[] values={sleep,move,dark};
 
     private TextView tv_date;
     private TextView tv_sum;
@@ -42,7 +51,7 @@ public class ReportFragment extends Fragment {
     private TextView tv_move;
     private TextView tv_sleep;
 
-    private CategorySeries data_set=buildCategoryDataset("使用报告",values,health);
+    private CategorySeries data_set;
     private LinearLayout ll_expense_piechart;
     private GraphicalView graphicalView;
 
@@ -72,11 +81,33 @@ public class ReportFragment extends Fragment {
         String mDay=String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)-1);
         tv_date.setText(mMonth+"月"+mDay+"日");
 
-        tv_sum.setText(sum+"分钟");
-        tv_health.setText(health+"分钟");
-        tv_move.setText(move+"分钟");
-        tv_sleep.setText(sleep+"分钟");
-        tv_dark.setText(dark+"分钟");
+        String detail = "";
+        FileHelper fHelper2 = new FileHelper(getContext());
+        try {
+            String fname ="myFile.txt";
+            detail = fHelper2.read(fname);
+            String stringArray[] = detail.split(" ");
+            float num[] = new float[stringArray.length];
+            for (int i = 0; i < stringArray.length; i++) {
+                num[i] = Float.parseFloat(stringArray[i]);
+            }
+            values[0]=num[0];sleep=values[0];
+            values[1]=num[1];move=values[1];
+            values[2]=num[2];dark=values[2];
+            sum=num[3];
+            health=move+sleep+dark;
+            Toast.makeText(getContext(), values[0]+" "+values[1]+" "+values[2]+" "+sum+" ", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        data_set=buildCategoryDataset("使用报告",(values),health);
+
+        tv_sum.setText((int)sum+"分钟");
+        tv_health.setText((int)health+"分钟");
+        tv_move.setText((int)move+"分钟");
+        tv_sleep.setText((int)sleep+"分钟");
+        tv_dark.setText((int)dark+"分钟");
 
         ll_expense_piechart = root.findViewById(R.id.ll_expense_piechart);
         ll_expense_piechart.removeAllViews();
@@ -93,12 +124,12 @@ public class ReportFragment extends Fragment {
     }
 
 
-    private   CategorySeries buildCategoryDataset(String title,double[]values,double sum)
+    private   CategorySeries buildCategoryDataset(String title, float[] values, double sum)
     {
         CategorySeries series =new CategorySeries(title);
-        series.add("躺卧时使用",values[0]/sum);
-        series.add("运动时使用",values[1]/sum);
-        series.add("黑暗环境中使用",values[2]/sum);
+        series.add("躺卧时使用",values[0]/health);
+        series.add("运动时使用",values[1]/health);
+        series.add("黑暗环境中使用",values[2]/health);
         return series;
     }
     private DefaultRenderer getPieRenderer(){
@@ -146,6 +177,25 @@ public class ReportFragment extends Fragment {
         return renderer;
     }
 
+//    @Override
+//    public void getLocationTime(float time) {
+//        this.moveTime=(int)time;
+//    }
+//
+//    @Override
+//    public void getOrientTime(float time) {
+//        this.sleepTime=(int)time;
+//    }
+//
+//    @Override
+//    public void getLight(float[] values) {
+//
+//    }
+//
+//    @Override
+//    public void getDarktime(int Darktime) {
+//        this.
+//    }
 }
 
 
