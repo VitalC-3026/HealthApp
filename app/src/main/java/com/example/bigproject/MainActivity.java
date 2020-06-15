@@ -118,9 +118,17 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
         Toast.makeText(this, "光线传感器获取参数: " + values[0], Toast.LENGTH_SHORT).show();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void showContacts() {
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.VIBRATE)
+                != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
+                != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
+                != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE)
+                != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE)
                 != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
@@ -145,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.INTERNET,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.ACCESS_NETWORK_STATE,
                     Manifest.permission.ACCESS_WIFI_STATE,
                     Manifest.permission.READ_PHONE_STATE,
@@ -153,6 +162,9 @@ public class MainActivity extends AppCompatActivity implements LightSensor.Light
                     Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
                     Manifest.permission.CHANGE_WIFI_STATE,
                     Manifest.permission.BODY_SENSORS,
+                    Manifest.permission.VIBRATE,
+                    Manifest.permission.CONTROL_LOCATION_UPDATES,
+                    Manifest.permission.ACCESS_NOTIFICATION_POLICY
             }, BAIDU_READ_PHONE_STATE);
         } else {
             showLocation();
