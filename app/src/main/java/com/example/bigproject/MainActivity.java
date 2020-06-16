@@ -106,13 +106,6 @@ public class MainActivity extends AppCompatActivity
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 
-        // 广播方式
-        /*intentFilter = startScreenBroadcastReciver(this);
-        screenReceiver = new ScreenBroadcastReceiver();
-        registerReceiver(screenReceiver, intentFilter);*/
-        // 获取屏幕状态 1=>屏幕亮 2=>屏幕熄灭 3=>屏幕正在使用
-        /*int res = screenReceiver.getResult();*/
-
         intent = new Intent(this, RunService.class);//初始化后台服务
         if(Build.VERSION.SDK_INT>=26)//开启后台服务
             startForegroundService(intent);
@@ -289,7 +282,6 @@ public class MainActivity extends AppCompatActivity
                     Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
                     Manifest.permission.CHANGE_WIFI_STATE,
                     Manifest.permission.BODY_SENSORS,
-                    Manifest.permission.VIBRATE,
                     Manifest.permission.CONTROL_LOCATION_UPDATES,
                     Manifest.permission.ACCESS_NOTIFICATION_POLICY
             }, BAIDU_READ_PHONE_STATE);
@@ -312,9 +304,10 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
                     showLocation();
+                    Toast.makeText(this, "获取权限成功", Toast.LENGTH_SHORT).show();
                 } else {
                     // 没有获取到权限，做特殊处理
-                    Toast.makeText(this, "获取位置权限失败，请手动开启", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "获取权限失败，请手动开启", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
