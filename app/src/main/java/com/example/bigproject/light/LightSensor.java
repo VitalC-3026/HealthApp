@@ -11,10 +11,11 @@ public class LightSensor implements SensorEventListener {
     private LightCallback callback;
     public SensorManager sensorManager;
     public Sensor lightSensor;
-    public float[] lux;
 
-    private float totalTime=0;
-    private long lastTime;
+    private float lastDarkTime=0;
+    private long lastTime=0;
+    private boolean lastDark=false;
+    private float darkTimeDiff=0;
 
     public LightSensor(Context context, LightCallback callback) {
         this.callback = callback;
@@ -26,19 +27,20 @@ public class LightSensor implements SensorEventListener {
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float[] values = event.values;
-        lux = new float[2];
+        long currentTime=System.currentTimeMillis();
+        if(currentTime-lastTime<100) return;
+        lastTime=currentTime;
         int sensorType = event.sensor.getType();
         if (sensorType == Sensor.TYPE_LIGHT) {
-            // 初始数据
-            lux[0] = values[0];
-            // 计算屏幕的亮度
-            lux[1] = values[0] * (1f / 255f);
-
+            boolean dark;
+            if(event.values[0]<5) dark=true;
+            else dark=false;
+            if(lastDark) {
+                darkTimeDiff += 0.1;
+                callback.getLightTime(darkTimeDiff);
+            }
+            lastDark=dark;
         }
-        callback.getLight(lux);
-
-
     }
 
     @Override
@@ -47,8 +49,7 @@ public class LightSensor implements SensorEventListener {
     }
 
     public interface LightCallback {
-        void getLight(float[] values);
-        void getDarktime(float Darktime);
+        void getLightTime(float time);
     }
 
     /**

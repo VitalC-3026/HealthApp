@@ -1,6 +1,5 @@
 package com.example.bigproject.ui.report;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.bigproject.FileHelper;
-import com.example.bigproject.MainActivity;
 import com.example.bigproject.R;
 
 import org.achartengine.ChartFactory;
@@ -27,6 +25,7 @@ import org.achartengine.renderer.SimpleSeriesRenderer;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class ReportFragment extends Fragment {
 
@@ -41,11 +40,10 @@ public class ReportFragment extends Fragment {
 //    private Context mcontext;
 
 
-    private float health;
+    private float unhealthy;
     private float[] values={sleep,move,dark};
 
     private TextView tv_date;
-    private TextView tv_sum;
     private TextView tv_health;
     private TextView tv_dark;
     private TextView tv_move;
@@ -70,15 +68,14 @@ public class ReportFragment extends Fragment {
 
         tv_date=root.findViewById(R.id.date);
 
-        tv_sum=root.findViewById(R.id.tvSum);
         tv_dark=root.findViewById(R.id.tvDark);
         tv_health=root.findViewById(R.id.tvHealth);
         tv_move=root.findViewById(R.id.tvMove);
         tv_sleep=root.findViewById(R.id.tvSleep);
 
-        Calendar calendar=Calendar.getInstance();
+        Calendar calendar=Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));//设置时区
         String mMonth=String.valueOf(calendar.get(Calendar.MONTH)+1);
-        String mDay=String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)-1);
+        String mDay=String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         tv_date.setText(mMonth+"月"+mDay+"日");
 
         String detail = "";
@@ -94,17 +91,15 @@ public class ReportFragment extends Fragment {
             values[0]=num[0];sleep=values[0];
             values[1]=num[1];move=values[1];
             values[2]=num[2];dark=values[2];
-            sum=num[3];
-            health=move+sleep+dark;
-            Toast.makeText(getContext(), values[0]+" "+values[1]+" "+values[2]+" "+sum+" ", Toast.LENGTH_SHORT).show();
+            unhealthy =move+sleep+dark;
+            //Toast.makeText(getContext(), values[0]+" "+values[1]+" "+values[2]+" "+sum+" ", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        data_set=buildCategoryDataset("使用报告",(values),health);
+        data_set=buildCategoryDataset("使用报告",(values), unhealthy);
 
-        tv_sum.setText((int)sum+"分钟");
-        tv_health.setText((int)health+"分钟");
+        tv_health.setText((int) unhealthy +"分钟");
         tv_move.setText((int)move+"分钟");
         tv_sleep.setText((int)sleep+"分钟");
         tv_dark.setText((int)dark+"分钟");
@@ -120,16 +115,15 @@ public class ReportFragment extends Fragment {
         ll_expense_piechart.addView(graphicalView);
         return root;
 
-
     }
 
 
-    private   CategorySeries buildCategoryDataset(String title, float[] values, double sum)
+    private CategorySeries buildCategoryDataset(String title, float[] values, double sum)
     {
         CategorySeries series =new CategorySeries(title);
-        series.add("躺卧时使用",values[0]/health);
-        series.add("运动时使用",values[1]/health);
-        series.add("黑暗环境中使用",values[2]/health);
+        series.add("躺卧时使用",values[0]/ unhealthy);
+        series.add("运动时使用",values[1]/ unhealthy);
+        series.add("黑暗环境中使用",values[2]/ unhealthy);
         return series;
     }
     private DefaultRenderer getPieRenderer(){
@@ -177,25 +171,6 @@ public class ReportFragment extends Fragment {
         return renderer;
     }
 
-//    @Override
-//    public void getLocationTime(float time) {
-//        this.moveTime=(int)time;
-//    }
-//
-//    @Override
-//    public void getOrientTime(float time) {
-//        this.sleepTime=(int)time;
-//    }
-//
-//    @Override
-//    public void getLight(float[] values) {
-//
-//    }
-//
-//    @Override
-//    public void getDarktime(int Darktime) {
-//        this.
-//    }
 }
 
 

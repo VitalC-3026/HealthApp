@@ -1,7 +1,6 @@
 package com.example.bigproject;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,34 +8,26 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
-import android.view.View;
+import android.view.KeyEvent;
 import android.view.Menu;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toast;
 
+import com.example.bigproject.RunService.RunService;
 import com.example.bigproject.LocationService.LocationService;
 import com.example.bigproject.light.LightSensor;
-
 import com.example.bigproject.orientation.OrientSensor;
 import com.example.bigproject.LocationService.LocationUtils;
-import com.example.bigproject.light.LightSensor;
 import com.example.bigproject.ui.home.HomeFragment;
-import com.example.bigproject.ui.setting.SettingFragment;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.annotation.RequiresApi;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,16 +36,23 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
         implements OrientSensor.OrientCallBack, LocationService.LocationCallBack, LightSensor.LightCallback {
 
     private static final String TAG = "MainActivity";
     private AppBarConfiguration mAppBarConfiguration;
-    private TextView lightValues;
     private LightSensor lightSensor;
+    private OrientSensor orientSensor;
+    private LocationService locationService;
     private HomeFragment homeFragment = new HomeFragment();
     // 获取权限的请求码，到请求权限都要对应输入这个请求码
     private static final int BAIDU_READ_PHONE_STATE = 100;
@@ -62,9 +60,25 @@ public class MainActivity extends AppCompatActivity
     private KeyguardManager keyguardManager;
     private ScreenBroadcastReceiver screenReceiver;
     private IntentFilter intentFilter;
+    private Intent intent;
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case 1:
+                    Log.i("====","初始化每日时间");
+                    saveToFile(1,1,1,3);
+                    break;
+            }
+        }
+    };
 
-
-    private Context mContext;
+    private float sleepTime=0;
+    private float moveTime=0;
+    private float darkTime =10;
+    private long lastDarkTime =0;
+    private long lastLocationTime=0;
+    private long lastOrientTime=0;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -78,7 +92,6 @@ public class MainActivity extends AppCompatActivity
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        lightValues = (TextView) findViewById(R.id.text_light);
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_description, R.id.nav_report, R.id.nav_setting, R.id.nav_team)
                 .setDrawerLayout(drawer)
@@ -86,10 +99,7 @@ public class MainActivity extends AppCompatActivity
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-        lightSensor = new LightSensor(this, this);
-        /*if (!lightSensor.registerLightSensor()) {
-            Toast.makeText(this, "光线传感器不可用", Toast.LENGTH_SHORT).show();
-        }*/
+
         if (Build.VERSION.SDK_INT >= 23) {
             showContacts();
         }
@@ -106,58 +116,108 @@ public class MainActivity extends AppCompatActivity
         // 获取屏幕状态 1=>屏幕亮 2=>屏幕熄灭 3=>屏幕正在使用
         int res = screenReceiver.getResult();
 
-        float num[] = new float[4];//用来存储从文件中读取出的数据
-        String detail = "";
-        FileHelper fHelper2 = new FileHelper(getApplicationContext());
-        try    {
-        String fname = "myFile.txt";
-        detail = fHelper2.read(fname);
-        String stringArray[] = detail.split(" ");
-        for (int i = 0; i < stringArray.length; i++) {
-            num[i] = Float.parseFloat(stringArray[i]);
-        }
-//            Toast.makeText(getContext(), values[0]+" "+values[1]+" "+values[2]+" "+sum+" ", Toast.LENGTH_SHORT).show();
-        } catch(IOException e){
-        e.printStackTrace();
-    }
-    saveToFile(sleepTime/60+num[0], moveTime/60+num[1], darkTime/60+num[2], sumTime);//将更新的参数保存到文件中
+        intent = new Intent(this, RunService.class);//初始化后台服务
+        if(Build.VERSION.SDK_INT>=26)//开启后台服务
+            startForegroundService(intent);
+        else startService(intent);
 
-    OrientSensor orientSensor = new OrientSensor(this, this);
+        //注册方向传感器监听
+        orientSensor = new OrientSensor(this, this);
         orientSensor.registerOrient();
-    LocationService locationService = new LocationService(this, this, this);
+        //注册GPS监听
+        locationService = new LocationService(this, this, this);
         locationService.start();
-//        LightSensor lightSensor=new LightSensor(this,this);
-}
+        //注册光线传感器监听
+        lightSensor = new LightSensor(this, this);
+        lightSensor.registerLightSensor();
 
-    private float sleepTime;
-    private float moveTime;
-    private float darkTime=10;
-    private float sumTime=300;
+        //在每天凌晨重置记录的数据
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                handler.sendEmptyMessage(1);
+            }
+        };
+        Timer timer = new Timer(true);
+        Calendar calendar=Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
+        String mYear=String.valueOf(calendar.get(Calendar.YEAR));
+        String mMonth=String.valueOf(calendar.get(Calendar.MONTH)+1);
+        String mDay=String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        String strDate=mYear+"-"+mMonth+"-"+mDay+" 23:59:59";
+        timer.schedule(task,strToDateLong(strDate));
+    }
 
-
-
-
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     public void getLocationTime(float time) {
-        this.moveTime=time;
+        if(!isPhoneLocked()){
+            long currentTime=System.currentTimeMillis();
+            if(currentTime-lastLocationTime>10*1000){
+                float timeDifference = time-moveTime;
+                moveTime=time;
+                float[] times = readFile();
+                saveToFile(times[0],timeDifference/60+times[1],times[2],timeDifference/60+times[3]);
+                lastLocationTime=currentTime;
+                Toast.makeText(this,"请不要在行走时使用手机",Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
-    public void getDarktime(float Darktime) {
-//        this.darkTime=Darktime;//对应的传感器未传值
+    public void getLightTime(float time) {
+        if(!isPhoneLocked()){
+            long currentTime=System.currentTimeMillis();
+            if(currentTime- lastDarkTime >1*60*1000){
+                float timeDifference = time-darkTime;
+                darkTime=time;
+                float[] times = readFile();
+                saveToFile(times[0],times[1],timeDifference/60+times[2],timeDifference/60+times[3]);
+                lastDarkTime =currentTime;
+                Toast.makeText(this,"请不要在黑暗处使用手机",Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     public void getOrientTime(float time) {
-        this.sleepTime=time;
+        if(!isPhoneLocked()){
+            long currentTime=System.currentTimeMillis();
+            if(currentTime-lastOrientTime>1*60*1000){
+                float timeDifference = time-sleepTime;
+                sleepTime=time;
+                if(timeDifference<0) return;
+                float[] times = readFile();
+                saveToFile(timeDifference/60+times[0],times[1],times[2],timeDifference/60+times[3]);
+                lastOrientTime=currentTime;
+                Toast.makeText(this,"请注意您使用手机的姿势",Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
-    public void saveToFile(float sleepTime,float moveTime,float darkTime,float sumTime)
-    {
-        FileHelper fileHelper=new FileHelper(mContext);
+    public float[] readFile(){
+        float num[] = new float[4];//用来存储从文件中读取出的数据
+        String detail = "";
+        FileHelper fHelper2 = new FileHelper(this);
+        try    {
+            String fname = "myFile.txt";
+            detail = fHelper2.read(fname);
+            String[] stringArray = detail.split(" ");
+            for (int i = 0; i < stringArray.length; i++) {
+                num[i] = Float.parseFloat(stringArray[i]);
+            }
+        } catch(IOException e){
+            e.printStackTrace();
+        }finally {
+            return num;
+        }
+    }
+
+    public void saveToFile(float sleepTime,float moveTime,float darkTime,float sumTime) {
+        FileHelper fileHelper=new FileHelper(this);
         String fileName="myFile.txt";
         String filedetail=sleepTime+" "+moveTime+" "+darkTime+" "+sumTime;
-
         try {
             fileHelper.save(fileName,filedetail);
         }
@@ -166,7 +226,6 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -185,13 +244,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDestroy() {
         lightSensor.unregisterLightSensor();
+        orientSensor.unregisterOrient();
+        locationService.stop();
         unregisterReceiver(screenReceiver);
+        stopService(intent);
         super.onDestroy();
-    }
-
-    @Override
-    public void getLight(float[] values) {
-        Toast.makeText(this, "光线传感器获取参数: " + values[0], Toast.LENGTH_SHORT).show();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -224,7 +281,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
                 != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), "没有权限,请手动开启定位权限", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "没有权限,请手动开启定位权限", Toast.LENGTH_SHORT).show();
             // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.INTERNET,
@@ -249,8 +306,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showLocation() {
         Log.d(TAG, LocationUtils.getInstance().getLocations(this));
-        Toast.makeText(MainActivity.this, LocationUtils.getInstance().getLocations(MainActivity.this), Toast.LENGTH_LONG).show();
-//                Toast.makeText(MainActivity.this, "ssssss", Toast.LENGTH_LONG).show();
+        //Toast.makeText(MainActivity.this, LocationUtils.getInstance().getLocations(MainActivity.this), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -264,7 +320,7 @@ public class MainActivity extends AppCompatActivity
                     showLocation();
                 } else {
                     // 没有获取到权限，做特殊处理
-                    Toast.makeText(getApplicationContext(), "获取位置权限失败，请手动开启", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "获取位置权限失败，请手动开启", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
@@ -316,5 +372,27 @@ public class MainActivity extends AppCompatActivity
         return filter;
     }
 
-}
+    @Override
+    public boolean onKeyDown(int KeyCode, KeyEvent keyEvent){//按下返回键后，转入后台运行
+        if(KeyCode==KeyEvent.KEYCODE_BACK){//返回键按下
+            Toast.makeText(this,"应用转入后台运行",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            startActivity(intent);
+            return true;
+        }else return super.onKeyDown(KeyCode,keyEvent);
+    }
 
+    /**
+     * string类型时间转换为date
+     * @param strDate
+     * @return
+     */
+    public static Date strToDateLong(String strDate) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ParsePosition pos = new ParsePosition(0);
+        Date strtodate = formatter.parse(strDate, pos);
+        return strtodate;
+    }
+}

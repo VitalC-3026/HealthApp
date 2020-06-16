@@ -94,12 +94,6 @@ public class OrientSensor implements SensorEventListener {
             totalTime+=0.1;
             orientCallBack.getOrientTime(totalTime);
         }
-//        else{
-//            startTime=System.currentTimeMillis();
-//            timerHandler.postDelayed(timerRunnable,0);
-//        }
-//        Log.d("myTag", "onSensorChanged: 躺卧"+totalTime);
-        orientCallBack.getOrientTime(totalTime);
     }
 
     @Override
