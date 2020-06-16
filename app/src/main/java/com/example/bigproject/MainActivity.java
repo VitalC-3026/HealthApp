@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity
     private static final int BAIDU_READ_PHONE_STATE = 100;
     private PowerManager powerManager;
     private KeyguardManager keyguardManager;
-    private ScreenBroadcastReceiver screenReceiver;
     private IntentFilter intentFilter;
     private Intent intent;
     private Handler handler = new Handler(){
@@ -106,15 +105,13 @@ public class MainActivity extends AppCompatActivity
 
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        boolean isPowerOn = isPowerOn();
-        boolean isUsing = isPhoneLocked();
 
         // 广播方式
-        intentFilter = startScreenBroadcastReciver(this);
+        /*intentFilter = startScreenBroadcastReciver(this);
         screenReceiver = new ScreenBroadcastReceiver();
-        registerReceiver(screenReceiver, intentFilter);
+        registerReceiver(screenReceiver, intentFilter);*/
         // 获取屏幕状态 1=>屏幕亮 2=>屏幕熄灭 3=>屏幕正在使用
-        int res = screenReceiver.getResult();
+        /*int res = screenReceiver.getResult();*/
 
         intent = new Intent(this, RunService.class);//初始化后台服务
         if(Build.VERSION.SDK_INT>=26)//开启后台服务
@@ -150,7 +147,7 @@ public class MainActivity extends AppCompatActivity
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     public void getLocationTime(float time) {
-        if(!isPhoneLocked()){
+        if (!isPhoneLocked() && isPowerOn()) {
             long currentTime=System.currentTimeMillis();
             if(currentTime-lastLocationTime>10*1000){
                 float timeDifference = time-moveTime;
@@ -166,7 +163,7 @@ public class MainActivity extends AppCompatActivity
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     public void getLightTime(float time) {
-        if(!isPhoneLocked()){
+        if (!isPhoneLocked() && isPowerOn()) {
             long currentTime=System.currentTimeMillis();
             if(currentTime- lastDarkTime >1*60*1000){
                 float timeDifference = time-darkTime;
@@ -182,7 +179,7 @@ public class MainActivity extends AppCompatActivity
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     public void getOrientTime(float time) {
-        if(!isPhoneLocked()){
+        if (!isPhoneLocked() && isPowerOn()) {
             long currentTime=System.currentTimeMillis();
             if(currentTime-lastOrientTime>1*60*1000){
                 float timeDifference = time-sleepTime;
@@ -246,7 +243,6 @@ public class MainActivity extends AppCompatActivity
         lightSensor.unregisterLightSensor();
         orientSensor.unregisterOrient();
         locationService.stop();
-        unregisterReceiver(screenReceiver);
         stopService(intent);
         super.onDestroy();
     }
@@ -281,7 +277,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
                 != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "没有权限,请手动开启定位权限", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "没有权限,请手动开启权限", Toast.LENGTH_SHORT).show();
             // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.INTERNET,
@@ -329,6 +325,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // 判断是否熄屏 要求安卓在4.4W及以上
+    // true=>亮屏 false=>熄屏
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     public boolean isPowerOn() {
         return powerManager.isInteractive();
@@ -341,7 +338,7 @@ public class MainActivity extends AppCompatActivity
         return keyguardManager.isDeviceLocked() || keyguardManager.isKeyguardLocked();
     }
 
-    private class ScreenBroadcastReceiver extends BroadcastReceiver {
+    /*private class ScreenBroadcastReceiver extends BroadcastReceiver {
         private String action = null;
         private int result = 0;
 
@@ -370,7 +367,7 @@ public class MainActivity extends AppCompatActivity
         filter.addAction(Intent.ACTION_USER_PRESENT);
         context.registerReceiver(screenReceiver, filter);
         return filter;
-    }
+    }*/
 
     @Override
     public boolean onKeyDown(int KeyCode, KeyEvent keyEvent){//按下返回键后，转入后台运行

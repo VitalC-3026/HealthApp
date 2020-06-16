@@ -38,7 +38,7 @@ public class RunService extends Service {
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                     R.mipmap.ic_logo)) // 设置下拉列表中的图标(大图标)
                 .setContentTitle("HealthApp") // 设置下拉列表里的标题
-                .setSmallIcon(R.mipmap.logo) // 设置状态栏内的小图标
+                .setSmallIcon(R.mipmap.ic_logo) // 设置状态栏内的小图标
                 .setContentText("正在监测您使用手机的状态") // 设置上下文内容
                 .setWhen(System.currentTimeMillis()); // 设置该通知发生的时间
 

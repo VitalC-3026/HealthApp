@@ -111,6 +111,9 @@ public class SettingFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     SettingFragment.this.requestPermissions(new String[]{permissions[0]}, 100);
+                    if (!isGrantedPermissions(permissions[0])) {
+                        isGranted[0].setChecked(false);
+                    }
                 }
             }
         });
@@ -123,6 +126,9 @@ public class SettingFragment extends Fragment {
                     }
                     if (!isGrantedPermissions(permissions[2])) {
                         SettingFragment.this.requestPermissions(new String[]{permissions[2]}, 100);
+                    }
+                    if (!isGrantedPermissions(permissions[1]) && !isGrantedPermissions(permissions[2])) {
+                        isGranted[1].setChecked(false);
                     }
                 }
             }
@@ -137,6 +143,9 @@ public class SettingFragment extends Fragment {
                     if (!isGrantedPermissions(permissions[4])) {
                         SettingFragment.this.requestPermissions(new String[]{permissions[4]}, 100);
                     }
+                    if (!isGrantedPermissions(permissions[3]) || !isGrantedPermissions(permissions[4])) {
+                        isGranted[2].setChecked(false);
+                    }
                 }
             }
         });
@@ -147,7 +156,9 @@ public class SettingFragment extends Fragment {
                     if (!isGrantedPermissions(permissions[5])) {
                         SettingFragment.this.requestPermissions(new String[]{permissions[5]}, 100);
                     }
-
+                    if (isGrantedPermissions(permissions[5])) {
+                        isGranted[3].setChecked(false);
+                    }
                 }
             }
         });
@@ -158,7 +169,9 @@ public class SettingFragment extends Fragment {
                     if (!isGrantedPermissions(permissions[6])) {
                         SettingFragment.this.requestPermissions(new String[]{permissions[6]}, 100);
                     }
-
+                    if (!isGrantedPermissions(permissions[6])) {
+                        isGranted[4].setChecked(false);
+                    }
                 }
             }
         });

@@ -118,26 +118,10 @@ public class LocationUtils {
             final List<Address> mAddresses = mGeocoder.getFromLocation(latitude, longitude, 1);
             if (mAddresses.size() > 0) {
                 Address address = mAddresses.get(0);
-//                for (int i = 0;address.getAddressLine(i)!=null;i++){
-//                    String addressLine = address.getAddressLine(i);
-//                }
                 mStringBuilder.append(address.getAddressLine(0));
-//                for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
-//                    //每一组地址里面还会有许多地址。这里我取的前2个地址。xxx街道-xxx位置
-//                    if (i == 0) {
-//                        mStringBuilder.append(address.getAddressLine(i)).append("-");
-//                    }
-//                    if (i == 1) {
-//                        mStringBuilder.append(address.getAddressLine(i));
-//                        break;
-//                    }
-//                }
+
             }
 
-//            if (!mAddresses.isEmpty()) {
-//                Address address = mAddresses.get(0);
-//                mStringBuilder.append(address.getCountryName()).append(", ").append(address.getAdminArea()).append(", ").append(address.getLocality());
-//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
