@@ -22,6 +22,11 @@ public class LightSensor implements SensorEventListener {
         this.context = context;
     }
 
+    // 回调函数接口
+    public interface LightCallback {
+        void getLightTime(float time);
+    }
+
     /**
      * 接收传感器感知到的变化的亮度
      */
@@ -46,10 +51,6 @@ public class LightSensor implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-    }
-
-    public interface LightCallback {
-        void getLightTime(float time);
     }
 
     /**

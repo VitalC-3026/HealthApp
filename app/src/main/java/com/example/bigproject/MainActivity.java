@@ -249,9 +249,7 @@ public class MainActivity extends AppCompatActivity
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void showContacts() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.VIBRATE)
-                != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
                 != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED
@@ -277,7 +275,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
                 != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "没有权限,请手动开启权限", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "请在设置中查看权限是否都开启以确保程序正常运行", Toast.LENGTH_SHORT).show();
             // 申请一个（或多个）权限，并提供用于回调返回的获取码（用户定义）
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.INTERNET,

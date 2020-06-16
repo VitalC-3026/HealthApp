@@ -43,13 +43,6 @@ public class SettingFragment extends Fragment {
         settingViewModel =
                 ViewModelProviders.of(this).get(SettingViewModel.class);
         View root = inflater.inflate(R.layout.fragment_setting, container, false);
-        // final TextView textView = root.findViewById(R.id.text_slideshow);
-        /*settingViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });*/
         isGranted = new Switch[5];
 
         permissions = new String[]{
@@ -61,8 +54,6 @@ public class SettingFragment extends Fragment {
                 Manifest.permission.BODY_SENSORS,
                 Manifest.permission.ACCESS_NOTIFICATION_POLICY
         };
-        // 声明一个集合，在后面的代码中用来存储用户拒绝授权的权
-        List<String> mPermissionList = new ArrayList<>();
 
         return root;
     }
